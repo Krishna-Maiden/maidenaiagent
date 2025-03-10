@@ -5,32 +5,6 @@ using MaidenAIAgent.Shared.Services;
 namespace MaidenAIAgent.Infrastructure.Services
 {
     /// <summary>
-    /// Configuration settings for the token bucket rate limiter
-    /// </summary>
-    public class RateLimiterSettings
-    {
-        /// <summary>
-        /// Maximum requests per minute for Claude API
-        /// </summary>
-        public int ClaudeRequestsPerMinute { get; set; } = 10;
-
-        /// <summary>
-        /// Maximum tokens per minute for Claude API (both input and output)
-        /// </summary>
-        public int ClaudeTokensPerMinute { get; set; } = 10000;
-
-        /// <summary>
-        /// Buffer percentage to stay under the rate limit (0-100)
-        /// </summary>
-        public int BufferPercentage { get; set; } = 10;
-
-        /// <summary>
-        /// Cache expiration time for rate limiting data in minutes
-        /// </summary>
-        public int CacheExpirationMinutes { get; set; } = 60;
-    }
-
-    /// <summary>
     /// Implements a token bucket algorithm for rate limiting API calls
     /// </summary>
     public class TokenBucketRateLimiter : IRateLimiter
