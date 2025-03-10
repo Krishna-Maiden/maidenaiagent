@@ -1,0 +1,10 @@
+MaidenAIAgent.API/obj/
+MaidenAIAgent.API/bin
+MaidenAIAgent.Core/obj
+MaidenAIAgent.Core/bin
+MaidenAIAgent.Infrastructure/obj
+MaidenAIAgent.Infrastructure/bin
+MaidenAIAgent.Shared/obj
+MaidenAIAgent.Shared/bin
+MaidenAIAgent.API/MaidenAIAgent.API.csproj.user
+.vs/
