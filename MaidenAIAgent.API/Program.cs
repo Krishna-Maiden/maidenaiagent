@@ -7,10 +7,25 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// In Program.cs
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
+
 // Add AI Agent Services
 builder.Services.AddAIAgentServices(builder.Configuration);
 
 var app = builder.Build();
+// Add this before app.Run()
+app.UseCors();
 
 // Configure middleware
 if (app.Environment.IsDevelopment())

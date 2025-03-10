@@ -21,10 +21,20 @@ namespace MaidenAIAgent.API.Controllers
         }
 
         /// <summary>
-        /// Streams a response to a chat query
+        /// Streams a response to a chat query via POST
         /// </summary>
         [HttpPost("chat")]
-        public async Task StreamChat([FromBody] StreamingRequest request)
+        public Task StreamChatPost([FromBody] StreamingRequest request) =>
+            ProcessStreamingRequest(request);
+
+        /// <summary>
+        /// Streams a response to a chat query via GET
+        /// </summary>
+        [HttpGet("chat")]
+        public Task StreamChatGet([FromQuery] StreamingRequest request) =>
+            ProcessStreamingRequest(request);
+
+        private async Task ProcessStreamingRequest(StreamingRequest request)
         {
             if (string.IsNullOrEmpty(request.Query))
             {
@@ -60,8 +70,6 @@ namespace MaidenAIAgent.API.Controllers
             Response.ContentType = "text/event-stream";
             Response.Headers.Add("Cache-Control", "no-cache");
             Response.Headers.Add("Connection", "keep-alive");
-
-            // Disable buffering
             Response.Headers.Add("X-Accel-Buffering", "no");
 
             // Prepare a CancellationToken that will trigger if the client disconnects
