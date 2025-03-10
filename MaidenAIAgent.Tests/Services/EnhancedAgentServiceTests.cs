@@ -18,10 +18,9 @@ namespace MaidenAIAgent.Tests.Services
         {
             // Arrange
             var mockLogger = new Mock<ILogger<EnhancedAgentService>>();
-            var mockToolRegistry = new Mock<EnhancedToolRegistry>(
-                new List<ITool>(),
-                Mock.Of<ILogger<EnhancedToolRegistry>>(),
-                null);
+
+            // Create a mock of IToolRegistry instead of the concrete class
+            var mockToolRegistry = new Mock<IToolRegistry>();
 
             // Create a mock for INLPService
             var mockNlpService = new Mock<INLPService>();
@@ -42,7 +41,7 @@ namespace MaidenAIAgent.Tests.Services
                 })
                 .ReturnsAsync(new ToolResult { Success = true, Result = "Test result" });
 
-            // Setup the repository to return our mock tool
+            // Setup the registry to return our mock tool
             mockToolRegistry.Setup(r => r.FindBestToolForQueryAsync(It.IsAny<string>()))
                 .ReturnsAsync(mockTool.Object);
 
@@ -97,10 +96,9 @@ namespace MaidenAIAgent.Tests.Services
         {
             // Arrange
             var mockLogger = new Mock<ILogger<EnhancedAgentService>>();
-            var mockToolRegistry = new Mock<EnhancedToolRegistry>(
-                new List<ITool>(),
-                Mock.Of<ILogger<EnhancedToolRegistry>>(),
-                null);
+
+            // Create a mock of IToolRegistry instead of the concrete class
+            var mockToolRegistry = new Mock<IToolRegistry>();
 
             // Create a mock for INLPService
             var mockNlpService = new Mock<INLPService>();

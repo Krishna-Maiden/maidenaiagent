@@ -44,7 +44,7 @@ namespace MaidenAIAgent.Core.Tools
         /// <summary>
         /// Finds the best tool for a query using NLP if available
         /// </summary>
-        public async Task<ITool> FindBestToolForQueryAsync(string query)
+        public virtual async Task<ITool> FindBestToolForQueryAsync(string query) // Made virtual for testing
         {
             // If NLP service is available, use it for intent classification
             if (_nlpService != null)

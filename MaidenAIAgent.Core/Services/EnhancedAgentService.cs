@@ -10,12 +10,12 @@ namespace MaidenAIAgent.Core.Services
     /// </summary>
     public class EnhancedAgentService : IAgentService
     {
-        private readonly EnhancedToolRegistry _toolRegistry;
+        private readonly IToolRegistry _toolRegistry;
         private readonly INLPService? _nlpService;
         private readonly ILogger<EnhancedAgentService> _logger;
 
         public EnhancedAgentService(
-            EnhancedToolRegistry toolRegistry,
+            IToolRegistry toolRegistry,
             ILogger<EnhancedAgentService> logger,
             INLPService? nlpService = null)
         {
@@ -55,7 +55,7 @@ namespace MaidenAIAgent.Core.Services
 
                         // Add sentiment analysis if useful
                         var sentimentResult = await _nlpService.AnalyzeSentimentAsync(request.Query);
-                        if (sentimentResult.Score > 0.7) // Only add if confidence is high
+                        if (sentimentResult.Score > 0.7) // Fixed: Only add if confidence is high (changed from 7 to 0.7)
                         {
                             enhancedParameters["sentiment"] = sentimentResult.Sentiment;
 
