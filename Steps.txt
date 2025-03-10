@@ -1,0 +1,13 @@
+1
+dotnet new sln -n MaidenAIAgent
+dotnet new webapi -n MaidenAIAgent.API
+dotnet new classlib -n MaidenAIAgent.Core
+dotnet new classlib -n MaidenAIAgent.Infrastructure
+dotnet new classlib -n MaidenAIAgent.Shared
+dotnet sln add MaidenAIAgent.API/MaidenAIAgent.API.csproj
+dotnet sln add MaidenAIAgent.Core/MaidenAIAgent.Core.csproj
+dotnet sln add MaidenAIAgent.Infrastructure/MaidenAIAgent.Infrastructure.csproj
+dotnet sln add MaidenAIAgent.Shared/MaidenAIAgent.Shared.csproj
+
+2
+
