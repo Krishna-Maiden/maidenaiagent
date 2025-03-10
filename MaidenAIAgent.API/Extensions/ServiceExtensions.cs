@@ -3,6 +3,7 @@ using MaidenAIAgent.Core.Services;
 using MaidenAIAgent.Core.Tools;
 using MaidenAIAgent.Infrastructure.Services;
 using MaidenAIAgent.Shared.Services;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace MaidenAIAgent.API.Extensions
@@ -21,13 +22,22 @@ namespace MaidenAIAgent.API.Extensions
             services.AddScoped<ITool, WeatherTool>();
             services.AddScoped<ITool, ChatTool>();
 
+            // Register Memory Cache for rate limiting
+            services.AddMemoryCache();
+
+            // Register Rate Limiter
+            services.AddSingleton<IRateLimiter, TokenBucketRateLimiter>();
+
             // Register Claude LLM Service
-            services.AddHttpClient<ILLMService, ClaudeService>();
+            // Register the base service first
+            services.AddHttpClient<ClaudeService>();
+            services.AddScoped<ILLMService, RateLimitedClaudeService>();
 
             // Register configuration
             services.Configure<AgentSettings>(configuration.GetSection("AgentSettings"));
             services.Configure<ClaudeSettings>(configuration.GetSection("ClaudeSettings"));
             services.Configure<ChatToolSettings>(configuration.GetSection("ChatToolSettings"));
+            services.Configure<RateLimiterSettings>(configuration.GetSection("RateLimiterSettings"));
 
             return services;
         }
