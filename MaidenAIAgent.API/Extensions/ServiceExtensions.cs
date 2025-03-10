@@ -12,16 +12,6 @@ namespace MaidenAIAgent.API.Extensions
     {
         public static IServiceCollection AddAIAgentServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Register AI Agent core services
-            services.AddScoped<IAgentService, AgentService>();
-
-            // Register Tool Services
-            services.AddScoped<IToolRegistry, ToolRegistry>();
-            services.AddScoped<ITool, SearchTool>();
-            services.AddScoped<ITool, CalculatorTool>();
-            services.AddScoped<ITool, WeatherTool>();
-            services.AddScoped<ITool, ChatTool>();
-
             // Register Memory Cache for rate limiting
             services.AddMemoryCache();
 
@@ -32,6 +22,22 @@ namespace MaidenAIAgent.API.Extensions
             // Register the base service first
             services.AddHttpClient<ClaudeService>();
             services.AddScoped<ILLMService, RateLimitedClaudeService>();
+
+            // Register NLP Service
+            services.AddScoped<INLPService, ClaudeNLPService>();
+
+            // Register Tool Services
+            services.AddScoped<ITool, SearchTool>();
+            services.AddScoped<ITool, CalculatorTool>();
+            services.AddScoped<ITool, WeatherTool>();
+            services.AddScoped<ITool, ChatTool>();
+
+            // Register Enhanced Tool Registry
+            services.AddScoped<EnhancedToolRegistry>();
+            services.AddScoped<IToolRegistry>(sp => sp.GetRequiredService<EnhancedToolRegistry>());
+
+            // Register AI Agent core services
+            services.AddScoped<IAgentService, EnhancedAgentService>();
 
             // Register configuration
             services.Configure<AgentSettings>(configuration.GetSection("AgentSettings"));

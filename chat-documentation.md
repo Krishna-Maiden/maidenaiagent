@@ -136,6 +136,10 @@ For production deployments, consider:
 - Monitor token usage to manage costs
 - Validate and sanitize input to prevent potential prompt injection
 
+## Finished Enhancements
+
+1. **Rate Limits**: To Prevent excessive API usage
+
 ## Future Enhancements
 
 The Chat Tool can be extended in several ways:
