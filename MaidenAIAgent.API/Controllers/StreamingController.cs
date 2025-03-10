@@ -24,11 +24,13 @@ namespace MaidenAIAgent.API.Controllers
         /// Streams a response to a chat query
         /// </summary>
         [HttpPost("chat")]
-        public async Task<IActionResult> StreamChat([FromBody] StreamingRequest request)
+        public async Task StreamChat([FromBody] StreamingRequest request)
         {
             if (string.IsNullOrEmpty(request.Query))
             {
-                return BadRequest("Query cannot be empty");
+                Response.StatusCode = StatusCodes.Status400BadRequest;
+                await Response.WriteAsync("Query cannot be empty");
+                return;
             }
 
             // Add streaming flag to parameters
@@ -40,20 +42,18 @@ namespace MaidenAIAgent.API.Controllers
 
             if (!result.Success)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
-                {
-                    Error = result.ErrorMessage ?? "Unknown error processing streaming request"
-                });
+                Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await Response.WriteAsync(result.ErrorMessage ?? "Unknown error processing streaming request");
+                return;
             }
 
             // Get the streaming channel from the result
             if (!result.Data.TryGetValue("streamingChannel", out var channelObj) ||
                 channelObj is not ChannelReader<StreamingResponseChunk> channel)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
-                {
-                    Error = "Streaming response channel not available"
-                });
+                Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await Response.WriteAsync("Streaming response channel not available");
+                return;
             }
 
             // Set the response content type for Server-Sent Events
@@ -62,7 +62,7 @@ namespace MaidenAIAgent.API.Controllers
             Response.Headers.Add("Connection", "keep-alive");
 
             // Disable buffering
-            Response.Body.Flush();
+            Response.Headers.Add("X-Accel-Buffering", "no");
 
             // Prepare a CancellationToken that will trigger if the client disconnects
             var clientDisconnectionToken = HttpContext.RequestAborted;
@@ -75,18 +75,18 @@ namespace MaidenAIAgent.API.Controllers
                     if (!string.IsNullOrEmpty(chunk.Error))
                     {
                         // Write error event
-                        await WriteEvent("error", new { message = chunk.Error });
+                        await WriteEventAsync("error", new { message = chunk.Error });
                     }
                     else if (!string.IsNullOrEmpty(chunk.Content))
                     {
                         // Write data event
-                        await WriteEvent("data", chunk.Content);
+                        await WriteEventAsync("data", chunk.Content);
                     }
 
                     if (chunk.IsComplete)
                     {
                         // Write completion event
-                        await WriteEvent("done", new { });
+                        await WriteEventAsync("done", new { });
                     }
 
                     // Ensure each event is sent immediately
@@ -102,7 +102,7 @@ namespace MaidenAIAgent.API.Controllers
                 // Try to send an error if possible
                 try
                 {
-                    await WriteEvent("error", new { message = $"Error streaming response: {ex.Message}" });
+                    await WriteEventAsync("error", new { message = $"Error streaming response: {ex.Message}" });
                     await Response.Body.FlushAsync();
                 }
                 catch
@@ -110,14 +110,12 @@ namespace MaidenAIAgent.API.Controllers
                     // Ignore further errors during error reporting
                 }
             }
-
-            return new EmptyResult();
         }
 
         /// <summary>
-        /// Helper method to write server-sent events
+        /// Helper method to write server-sent events asynchronously
         /// </summary>
-        private async Task WriteEvent(string eventType, object data)
+        private async Task WriteEventAsync(string eventType, object data)
         {
             var json = System.Text.Json.JsonSerializer.Serialize(data);
             await Response.WriteAsync($"event: {eventType}\n");
