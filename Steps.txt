@@ -15,3 +15,13 @@ dotnet add MaidenAIAgent.API/MaidenAIAgent.API.csproj reference MaidenAIAgent.In
 dotnet add MaidenAIAgent.Core/MaidenAIAgent.Core.csproj reference MaidenAIAgent.Shared/MaidenAIAgent.Shared.csproj
 dotnet add MaidenAIAgent.Infrastructure/MaidenAIAgent.Infrastructure.csproj reference MaidenAIAgent.Core/MaidenAIAgent.Core.csproj
 
+3. Tests
+dotnet new xunit -n MaidenAIAgent.Tests
+dotnet sln add MaidenAIAgent.Tests/MaidenAIAgent.Tests.csproj
+
+dotnet add MaidenAIAgent.Tests/MaidenAIAgent.Tests.csproj reference MaidenAIAgent.API/MaidenAIAgent.API.csproj
+dotnet add MaidenAIAgent.Tests/MaidenAIAgent.Tests.csproj reference MaidenAIAgent.Core/MaidenAIAgent.Core.csproj
+dotnet add MaidenAIAgent.Tests/MaidenAIAgent.Tests.csproj reference MaidenAIAgent.Infrastructure/MaidenAIAgent.Infrastructure.csproj
+dotnet add MaidenAIAgent.Tests/MaidenAIAgent.Tests.csproj reference MaidenAIAgent.Shared/MaidenAIAgent.Shared.csproj
+
+dotnet add MaidenAIAgent.Tests/MaidenAIAgent.Tests.csproj package Moq

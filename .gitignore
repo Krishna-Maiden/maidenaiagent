@@ -8,3 +8,5 @@ MaidenAIAgent.Shared/obj
 MaidenAIAgent.Shared/bin
 MaidenAIAgent.API/MaidenAIAgent.API.csproj.user
 .vs/
+MaidenAIAgent.Tests/obj/
+MaidenAIAgent.Tests/bin/

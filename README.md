@@ -79,3 +79,6 @@ To add a new tool:
 ## License
 
 MIT
+
+Running Tests
+dotnet test MaidenAIAgent.Tests/MaidenAIAgent.Tests.csproj

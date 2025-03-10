@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaidenAIAgent.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaidenAIAgent.Shared", "MaidenAIAgent.Shared\MaidenAIAgent.Shared.csproj", "{C13587AA-5C9D-43BA-BD8D-F9AAFEC595B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaidenAIAgent.Tests", "MaidenAIAgent.Tests\MaidenAIAgent.Tests.csproj", "{540B367F-D826-4837-A141-7802EEFD66DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{C13587AA-5C9D-43BA-BD8D-F9AAFEC595B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C13587AA-5C9D-43BA-BD8D-F9AAFEC595B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C13587AA-5C9D-43BA-BD8D-F9AAFEC595B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{540B367F-D826-4837-A141-7802EEFD66DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{540B367F-D826-4837-A141-7802EEFD66DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{540B367F-D826-4837-A141-7802EEFD66DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{540B367F-D826-4837-A141-7802EEFD66DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
