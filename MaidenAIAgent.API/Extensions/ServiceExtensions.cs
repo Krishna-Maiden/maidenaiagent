@@ -16,6 +16,7 @@ namespace MaidenAIAgent.API.Extensions
             services.AddScoped<ITool, SearchTool>();
             services.AddScoped<ITool, CalculatorTool>();
             services.AddScoped<ITool, WeatherTool>();
+            services.AddScoped<ITool, ChatTool>();
 
             // Register configuration
             services.Configure<AgentSettings>(configuration.GetSection("AgentSettings"));

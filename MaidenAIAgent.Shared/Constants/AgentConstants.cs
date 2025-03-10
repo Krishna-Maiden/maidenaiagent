@@ -7,6 +7,7 @@
             public const string Search = "Search";
             public const string Calculator = "Calculator";
             public const string Weather = "Weather";
+            public const string Chat = "Chat";
         }
 
         public static class ErrorMessages
