@@ -2,43 +2,61 @@
 
 ## Overview
 
-The Chat Tool is designed to handle conversational queries and provide general assistance to users. It responds to greetings, help requests, expressions of gratitude, and other common conversational patterns.
+The Chat Tool is designed to handle conversational queries and provide intelligent responses using Claude 3.7 Sonnet, Anthropic's large language model. It serves as both a specialized tool for simple interactions and a fallback for general queries that other tools cannot handle.
 
 ## Features
 
-- Natural language understanding for conversational intents
-- Contextual responses based on query content
-- Response classification for potential future integration with more sophisticated conversation flows
+- Integration with Claude 3.7 Sonnet for sophisticated, natural language responses
+- Fast handling of simple queries with predefined responses
+- Fallback capability for general questions not covered by other tools
+- Configurable system prompts to customize Claude's behavior
+- Performance optimization with optional response caching
 
-## Implementation Details
+## Architecture
 
-### Tool Identification
+### Components
 
-The Chat Tool identifies conversational queries by checking for common conversational patterns such as:
-- Greetings: "hello", "hi", "hey"
-- Help requests: "help", "what can you do"
-- Expressions of gratitude: "thanks", "thank you"
-- General inquiries: "how are you"
-- Conversation starters: "chat", "talk", "converse"
+1. **ChatTool**: The main tool class that handles conversational queries
+2. **ILLMService**: Interface for language model integration
+3. **ClaudeService**: Implementation of ILLMService for Claude API
+4. **ChatToolSettings**: Configuration settings for the Chat Tool
 
-### Response Generation
+### Integration Flow
 
-The tool generates appropriate responses based on the content of the query:
-1. Greetings receive a friendly welcome
-2. Help requests provide information about available capabilities
-3. Expressions of gratitude are acknowledged
-4. General inquiries receive appropriate responses
+1. The `CanHandle` method determines if a query should be handled by the Chat Tool
+2. For simple queries (greetings, thanks), predefined responses are used
+3. For complex queries, the request is forwarded to Claude 3.7 Sonnet
+4. The response is formatted and returned to the agent
 
-### Integration with Agent
+## Configuration
 
-The Chat Tool works within the existing agent framework:
-1. The `CanHandle` method determines if a query is conversational
-2. The `ExecuteAsync` method processes the query and returns a formatted response
-3. The response includes metadata about the query type for potential future analysis
+The Chat Tool can be configured through the `appsettings.json` file in the `ChatToolSettings` section:
+
+```json
+"ChatToolSettings": {
+  "SystemPrompt": "You are a helpful AI assistant integrated into an AI Agent system...",
+  "ResponseMaxLength": 500,
+  "UseCache": true,
+  "CacheExpirationMinutes": 60
+}
+```
+
+Claude API settings can be configured in the `ClaudeSettings` section:
+
+```json
+"ClaudeSettings": {
+  "ApiKey": "YOUR_ANTHROPIC_API_KEY",
+  "BaseUrl": "https://api.anthropic.com",
+  "ModelName": "claude-3-7-sonnet-20250219",
+  "MaxTokens": 1024,
+  "Temperature": 0.7,
+  "DefaultSystemPrompt": "You are Claude, an AI assistant created by Anthropic..."
+}
+```
 
 ## Usage Examples
 
-### Example 1: Greeting
+### Example 1: Simple Greeting
 
 **Request:**
 ```json
@@ -55,18 +73,19 @@ The Chat Tool works within the existing agent framework:
   "toolUsed": "Chat",
   "data": {
     "query": "Hello there!",
-    "responseType": "greeting"
+    "responseType": "simple",
+    "used_llm": false
   },
   "success": true
 }
 ```
 
-### Example 2: Help Request
+### Example 2: Complex Question (Using Claude)
 
 **Request:**
 ```json
 {
-  "query": "What can you help me with?",
+  "query": "What are the key considerations when implementing an AI agent architecture?",
   "useAllTools": true
 }
 ```
@@ -74,28 +93,59 @@ The Chat Tool works within the existing agent framework:
 **Response:**
 ```json
 {
-  "response": "I can help you with several tasks. You can ask me to search for information, calculate mathematical expressions, check the weather, or just chat!",
+  "response": "When implementing an AI agent architecture, there are several key considerations to keep in mind...",
   "toolUsed": "Chat",
   "data": {
-    "query": "What can you help me with?",
-    "responseType": "help"
+    "query": "What are the key considerations when implementing an AI agent architecture?",
+    "responseType": "complex",
+    "used_llm": true,
+    "tokens_used": 145,
+    "model": "claude-3-7-sonnet-20250219"
   },
   "success": true
 }
 ```
 
-## Extension Opportunities
+## Implementation Details
 
-The current implementation provides a basic foundation that can be extended in several ways:
+### Claude API Integration
+
+The service connects to the Anthropic API using:
+- API Key authentication
+- JSON request/response format
+- Configurable model parameters (temperature, max tokens)
+
+### Query Handling Logic
+
+The Chat Tool decides how to handle queries based on:
+1. **Specific Tool Check**: Determines if another tool should handle the query
+2. **Simple Query Check**: Identifies if the query can be handled with a predefined response
+3. **Fallback to Claude**: Uses Claude for complex or general queries
+
+### Performance Optimization
+
+For production deployments, consider:
+- Implementing the optional caching mechanism
+- Adjusting token limits based on anticipated query complexity
+- Setting appropriate temperature values for consistent responses
+
+## Security Notes
+
+- The Claude API key should be stored securely in a vault or environment variable
+- Consider implementing rate limiting to prevent excessive API usage
+- Monitor token usage to manage costs
+- Validate and sanitize input to prevent potential prompt injection
+
+## Future Enhancements
+
+The Chat Tool can be extended in several ways:
 
 1. **Improved Intent Recognition**: Integrate with NLP services for more accurate intent classification
 2. **Contextual Memory**: Add session state to remember previous interactions
 3. **Personalization**: Customize responses based on user preferences or history
 4. **Multi-turn Conversations**: Support more complex dialog flows
-5. **Integration with LLMs**: Connect with large language models for more sophisticated responses
-
-## Technical Considerations
-
-- Response generation is currently rule-based and could be enhanced with more sophisticated NLP
-- The tool contains a predefined list of patterns that may need regular updates
-- For production use, consider adding more robust logging and monitoring
+5. **Conversation Memory**: Add session state to track conversation history
+6. **Streaming Responses**: Implement streaming for long-form responses
+7. **Tool Augmentation**: Allow Claude to use other tools as needed
+8. **Prompt Engineering**: Refine system prompts for higher quality responses
+9. **Multi-modal Support**: Add image understanding capabilities if needed

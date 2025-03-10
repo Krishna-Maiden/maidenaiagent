@@ -1,7 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\MaidenAIAgent.Core\MaidenAIAgent.Core.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MaidenAIAgent.Shared\MaidenAIAgent.Shared.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

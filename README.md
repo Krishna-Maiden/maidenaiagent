@@ -9,8 +9,9 @@ An AI agent built with C# Web API that provides processing capabilities through 
   - **Search Tool**: Searches for information (simulated)
   - **Calculator Tool**: Performs mathematical calculations
   - **Weather Tool**: Retrieves weather information for a location (simulated)
-  - **Chat Tool**: Engages in conversation and provides general assistance
+  - **Chat Tool**: Provides intelligent responses using Claude 3.7 Sonnet integration
 - Extensible architecture to easily add more tools
+- Integration with Anthropic's Claude 3.7 Sonnet for enhanced conversational capabilities
 
 ## Project Structure
 

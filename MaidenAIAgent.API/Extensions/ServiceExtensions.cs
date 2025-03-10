@@ -1,6 +1,9 @@
 ﻿using MaidenAIAgent.Core.Models;
 using MaidenAIAgent.Core.Services;
 using MaidenAIAgent.Core.Tools;
+using MaidenAIAgent.Infrastructure.Services;
+using MaidenAIAgent.Shared.Services;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace MaidenAIAgent.API.Extensions
 {
@@ -18,8 +21,13 @@ namespace MaidenAIAgent.API.Extensions
             services.AddScoped<ITool, WeatherTool>();
             services.AddScoped<ITool, ChatTool>();
 
+            // Register Claude LLM Service
+            services.AddHttpClient<ILLMService, ClaudeService>();
+
             // Register configuration
             services.Configure<AgentSettings>(configuration.GetSection("AgentSettings"));
+            services.Configure<ClaudeSettings>(configuration.GetSection("ClaudeSettings"));
+            services.Configure<ChatToolSettings>(configuration.GetSection("ChatToolSettings"));
 
             return services;
         }
