@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MaidenAIAgent.Core\MaidenAIAgent.Core.csproj" />
+    <ProjectReference Include="..\MaidenAIAgent.Infrastructure\MaidenAIAgent.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
