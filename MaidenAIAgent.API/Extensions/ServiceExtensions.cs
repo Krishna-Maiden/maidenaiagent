@@ -18,10 +18,10 @@ namespace MaidenAIAgent.API.Extensions
             // Register Rate Limiter
             services.AddSingleton<IRateLimiter, TokenBucketRateLimiter>();
 
-            // Register Claude LLM Service
-            // Register the base service first
-            services.AddHttpClient<ClaudeService>();
-            services.AddScoped<ILLMService, RateLimitedClaudeService>();
+            // Register Claude LLM Service with streaming support
+            services.AddHttpClient<StreamingClaudeService>();
+            services.AddScoped<IStreamingLLMService, StreamingClaudeService>();
+            services.AddScoped<ILLMService>(sp => sp.GetRequiredService<IStreamingLLMService>());
 
             // Register NLP Service
             services.AddScoped<INLPService, ClaudeNLPService>();
@@ -31,6 +31,7 @@ namespace MaidenAIAgent.API.Extensions
             services.AddScoped<ITool, CalculatorTool>();
             services.AddScoped<ITool, WeatherTool>();
             services.AddScoped<ITool, ChatTool>();
+            services.AddScoped<ITool, StreamingChatTool>();
 
             // Register Enhanced Tool Registry
             services.AddScoped<EnhancedToolRegistry>();

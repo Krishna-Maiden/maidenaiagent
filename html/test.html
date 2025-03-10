@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaidenAI Streaming Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .status-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            margin-right: 10px;
+        }
+        
+        .status-indicator.idle {
+            background-color: #6c757d;
+        }
+        
+        .status-indicator.streaming {
+            background-color: #28a745;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-indicator.error {
+            background-color: #dc3545;
+        }
+        
+        .status-text {
+            font-size: 14px;
+        }
+        
+        .input-area {
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            min-height: 80px;
+            font-family: inherit;
+            font-size: 16px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background-color: #0069d9;
+        }
+        
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .cancel-btn {
+            background-color: #dc3545;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .response-area {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            white-space: pre-wrap;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #333;
+            border-radius: 50%;
+            margin-right: 3px;
+            animation: blink 1.5s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes blink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+        
+        .stats {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MaidenAI Streaming Demo</h1>
+    
+    <div class="status-bar">
+        <div id="statusIndicator" class="status-indicator idle"></div>
+        <div id="statusText" class="status-text">Ready</div>
+    </div>
+    
+    <div class="input-area">
+        <textarea id="queryInput" placeholder="Enter your query here..."></textarea>
+    </div>
+    
+    <div class="controls">
+        <button id="submitBtn">Send Query</button>
+        <button id="cancelBtn" class="cancel-btn" disabled>Cancel</button>
+    </div>
+    
+    <h2>Response</h2>
+    <div id="responseArea" class="response-area">
+        Ask me something that requires a detailed response to see streaming in action!
+    </div>
+    
+    <div id="stats" class="stats">
+        Characters: 0 | Words: 0 | Chunks: 0
+    </div>
+    
+    <script>
+        // StreamingClient class
+        class StreamingClient {
+            constructor(apiBaseUrl) {
+                this.apiBaseUrl = apiBaseUrl || '';
+                this.eventSource = null;
+                this.isStreaming = false;
+                this.responseBuffer = '';
+                this.onChunkReceived = null;
+                this.onComplete = null;
+                this.onError = null;
+            }
+            
+            startStreamingChat(query, parameters = {}, onChunkReceived, onComplete, onError) {
+                this.stopStreaming();
+                
+                this.onChunkReceived = onChunkReceived || ((chunk) => console.log('Chunk:', chunk));
+                this.onComplete = onComplete || (() => console.log('Streaming completed'));
+                this.onError = onError || ((error) => console.error('Streaming error:', error));
+                
+                this.responseBuffer = '';
+                
+                // Create the payload
+                const payload = {
+                    query: query,
+                    parameters: parameters
+                };
+                
+                // For demo purposes, simulate streaming with local data
+                this.simulateStreaming(query);
+                
+                // In a real implementation, you would use:
+                /*
+                fetch(`${this.apiBaseUrl}/api/streaming/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    if (response.headers.get('content-type')?.includes('text/event-stream')) {
+                        this.setupEventSource(query, parameters);
+                    } else {
+                        response.json().then(data => {
+                            this.onChunkReceived(data.response || 'No response received');
+                            this.onComplete();
+                        });
+                    }
+                }).catch(error => {
+                    this.onError(`Failed to initiate streaming: ${error.message}`);
+                });
+                */
+            }
+            
+            // For demo purposes only - simulates streaming responses
+            simulateStreaming(query) {
+                this.isStreaming = true;
+                
+                // Generate simulated response based on query
+                let simulatedResponse;
+                if (query.toLowerCase().includes('quantum')) {
+                    simulatedResponse = `Quantum computing is a type of computing that leverages the principles of quantum mechanics to perform operations on data. Unlike classical computing, which uses bits that are either 0 or 1, quantum computing uses quantum bits, or "qubits," which can exist in multiple states simultaneously due to a property called superposition.
+
+This ability to exist in multiple states simultaneously allows quantum computers to perform certain types of calculations much faster than classical computers. For instance, problems like factoring large numbers, which is the basis of much of today's encryption, can theoretically be solved much faster on a quantum computer than on a classical computer.
+
+The power of quantum computing comes from several key principles:
+
+1. Superposition: Qubits can exist in multiple states at once, allowing quantum computers to process a vast number of possibilities simultaneously.
+
+2. Entanglement: Qubits can be "entangled," meaning the state of one qubit is directly related to the state of another, regardless of the distance between them. This enables quantum computers to process information in ways that classical computers cannot.
+
+3. Interference: Quantum algorithms use interference to enhance the probability of getting the correct answer while minimizing incorrect answers.
+
+Despite its potential, quantum computing faces significant challenges. Qubits are extremely fragile and can lose their quantum properties (decoherence) when they interact with their environment. This requires quantum computers to operate at extremely cold temperatures, near absolute zero, and to be heavily shielded from external interference.
+
+Current quantum computers are still in their early stages, with relatively few qubits and high error rates. However, major technology companies like IBM, Google, and Microsoft, as well as dedicated quantum computing companies like D-Wave and Rigetti, are making steady progress. In 2019, Google claimed to have achieved "quantum supremacy," performing a calculation that would be practically impossible for a classical computer to complete in a reasonable timeframe.
+
+As quantum computing continues to advance, it promises to revolutionize fields such as cryptography, drug discovery, materials science, optimization problems, and artificial intelligence. However, it's important to note that quantum computers won't replace classical computers; rather, they'll be used for specific types of problems where they offer a significant advantage.`;
+                } else if (query.toLowerCase().includes('explain') || query.toLowerCase().includes('detail')) {
+                    simulatedResponse = `When implementing streaming for long-form responses in an AI agent system, there are several key architectural and technical considerations that need to be addressed to ensure a smooth user experience:
+
+1. **Streaming Architecture Design**
+
+The foundation of a good streaming implementation relies on an event-based architecture. Server-Sent Events (SSE) is often the preferred choice over WebSockets for this use case because:
+
+- It's simpler to implement and maintain
+- It's optimized for server-to-client communication
+- It has built-in reconnection handling
+- It works over standard HTTP/HTTPS
+
+The system typically needs three main components:
+- A client-side consumer that processes and renders chunks
+- A server-side streaming endpoint that formats and sends chunks
+- A connection to the LLM API that supports streaming responses
+
+2. **Progressive Rendering**
+
+A critical aspect of streaming implementation is how the content is rendered on the client side. You want to ensure:
+
+- Text appears naturally without jarring updates
+- The UI remains responsive during streaming
+- Users can start reading while the response is still being generated
+- The interface provides clear indicators that more content is coming
+
+3. **Connection Management**
+
+Handling connections properly is essential for reliability:
+
+- Implement proper timeout handling (typically 30-120 seconds)
+- Add automatic reconnection logic with exponential backoff
+- Gracefully handle client disconnections without wasting server resources
+- Implement keepalive mechanisms for longer responses
+
+4. **Error Handling**
+
+Robust error handling significantly improves the user experience:
+
+- Provide meaningful error messages when streaming fails
+- Implement fallback mechanisms to non-streaming responses
+- Log detailed information server-side for debugging
+- Allow users to retry or cancel streaming operations
+
+5. **Performance Considerations**
+
+Performance optimization is crucial for streaming implementations:
+
+- Buffer management to handle fast producers/slow consumers
+- Chunk size optimization (too small: overhead; too large: delays)
+- Rate limiting to prevent server overload
+- Resource cleanup to prevent memory leaks
+
+6. **User Experience Design**
+
+The UI/UX should be designed specifically with streaming in mind:
+
+- Include visible loading indicators during streaming
+- Implement scroll management for long responses
+- Provide options to pause, resume, or cancel streaming
+- Consider adding progress indicators for very long responses
+
+7. **Testing and Monitoring**
+
+Comprehensive testing and monitoring are essential:
+
+- Simulate slow connections and network interruptions
+- Test with various response lengths and content types
+- Monitor streaming performance metrics in production
+- Implement automated alerts for streaming-related issues
+
+By addressing these considerations, you can create a robust streaming implementation that provides a responsive and engaging user experience even with long-form AI-generated content.`;
+                } else {
+                    simulatedResponse = `I'd be happy to help with that! To provide you with the most accurate and useful information, I should first explain how streaming responses work in this system.
+
+Streaming allows me to send my response to you piece by piece as it's being generated, rather than making you wait for the entire response to be completed before seeing anything. This is particularly valuable for detailed explanations, creative writing, or any situation where the response might be lengthy.
+
+Some benefits of streaming include:
+
+1. **Immediate feedback**: You start seeing my response right away
+2. **Progressive reading**: You can begin reading while the rest is still generating
+3. **Better interactivity**: The conversation feels more natural and responsive
+4. **Reduced perceived latency**: Even though the total time is similar, it feels faster
+
+To best demonstrate streaming, try asking questions that might need longer responses, like:
+- "Explain quantum computing in detail"
+- "Write a creative story about a time traveler"
+- "Compare and contrast different machine learning approaches"
+- "Provide a comprehensive guide to implementing microservices"
+
+You'll see how the response appears gradually, word by word, similar to watching someone type. This creates a more engaging experience than waiting for a complete response to appear all at once.
+
+Is there a specific topic you'd like me to explain in detail to showcase the streaming capability?`;
+                }
+                
+                // Break the response into chunks to simulate streaming
+                const words = simulatedResponse.split(' ');
+                let chunkIndex = 0;
+                let chunkCount = 0;
+                
+                // Send chunks at varying speeds to simulate real typing
+                const sendNextChunk = () => {
+                    if (chunkIndex < words.length && this.isStreaming) {
+                        // Determine chunk size (1-5 words)
+                        const chunkSize = Math.min(Math.floor(Math.random() * 5) + 1, words.length - chunkIndex);
+                        const chunk = words.slice(chunkIndex, chunkIndex + chunkSize).join(' ') + ' ';
+                        
+                        this.responseBuffer += chunk;
+                        this.onChunkReceived(chunk, this.responseBuffer);
+                        
+                        chunkIndex += chunkSize;
+                        chunkCount++;
+                        
+                        // Vary the delay between chunks (30-150ms)
+                        const delay = Math.floor(Math.random() * 120) + 30;
+                        setTimeout(sendNextChunk, delay);
+                    } else if (this.isStreaming) {
+                        // Complete the streaming
+                        this.onComplete(this.responseBuffer);
+                        this.isStreaming = false;
+                    }
+                };
+                
+                // Start sending chunks
+                sendNextChunk();
+            }
+            
+            setupEventSource(query, parameters) {
+                try {
+                    // Encode parameters for URL
+                    const params = new URLSearchParams({
+                        query: query,
+                        ...parameters
+                    }).toString();
+                    
+                    // Create EventSource connection
+                    this.eventSource = new EventSource(`${this.apiBaseUrl}/api/streaming/chat?${params}`);
+                    this.isStreaming = true;
+                    
+                    // Handle data events (chunks of response)
+                    this.eventSource.addEventListener('data', (event) => {
+                        try {
+                            const chunk = event.data;
+                            this.responseBuffer += chunk;
+                            this.onChunkReceived(chunk, this.responseBuffer);
+                        } catch (error) {
+                            console.error('Error processing chunk:', error);
+                        }
+                    });
+                    
+                    // Handle error events
+                    this.eventSource.addEventListener('error', (event) => {
+                        try {
+                            const errorData = JSON.parse(event.data || '{"message":"Unknown streaming error"}');
+                            this.onError(errorData.message);
+                            this.stopStreaming();
+                        } catch (error) {
+                            this.onError('Error in stream');
+                            this.stopStreaming();
+                        }
+                    });
+                    
+                    // Handle completion
+                    this.eventSource.addEventListener('done', () => {
+                        this.onComplete(this.responseBuffer);
+                        this.stopStreaming();
+                    });
+                    
+                    // Handle general errors
+                    this.eventSource.onerror = () => {
+                        this.onError('Connection error');
+                        this.stopStreaming();
+                    };
+                } catch (error) {
+                    this.onError(`Error setting up event source: ${error.message}`);
+                    this.stopStreaming();
+                }
+            }
+            
+            stopStreaming() {
+                if (this.eventSource) {
+                    this.eventSource.close();
+                    this.eventSource = null;
+                }
+                this.isStreaming = false;
+            }
+        }
+        
+        // Initialize the demo app
+        document.addEventListener('DOMContentLoaded', () => {
+            const client = new StreamingClient();
+            
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const queryInput = document.getElementById('queryInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const responseArea = document.getElementById('responseArea');
+            const statsElem = document.getElementById('stats');
+            
+            let chunkCount = 0;
+            
+            // Update stats
+            const updateStats = (text) => {
+                const charCount = text.length;
+                const wordCount = text.trim().split(/\s+/).length;
+                statsElem.textContent = `Characters: ${charCount} | Words: ${wordCount} | Chunks: ${chunkCount}`;
+            };
+            
+            // Set status
+            const setStatus = (status, message) => {
+                statusIndicator.className = `status-indicator ${status}`;
+                statusText.textContent = message;
+                
+                if (status === 'streaming') {
+                    submitBtn.disabled = true;
+                    cancelBtn.disabled = false;
+                } else {
+                    submitBtn.disabled = false;
+                    cancelBtn.disabled = true;
+                }
+            };
+            
+            // Handle query submission
+            submitBtn.addEventListener('click', () => {
+                const query = queryInput.value.trim();
+                
+                if (!query) {
+                    alert('Please enter a query');
+                    return;
+                }
+                
+                // Reset UI
+                responseArea.textContent = '';
+                chunkCount = 0;
+                updateStats('');
+                setStatus('streaming', 'Streaming response...');
+                
+                // Start streaming
+                client.startStreamingChat(
+                    query,
+                    {},
+                    // On chunk received
+                    (chunk, fullText) => {
+                        responseArea.textContent = fullText;
+                        chunkCount++;
+                        updateStats(fullText);
+                    },
+                    // On complete
+                    (fullResponse) => {
+                        setStatus('idle', 'Completed');
+                        updateStats(fullResponse);
+                    },
+                    // On error
+                    (error) => {
+                        setStatus('error', `Error: ${error}`);
+                        responseArea.innerHTML += `\n\n<span class="error">Error: ${error}</span>`;
+                    }
+                );
+            });
+            
+            // Handle cancel button
+            cancelBtn.addEventListener('click', () => {
+                client.stopStreaming();
+                setStatus('idle', 'Cancelled');
+            });
+            
+            // Set initial focus
+            queryInput.focus();
+        });
+    </script>
+</body>
+</html>
