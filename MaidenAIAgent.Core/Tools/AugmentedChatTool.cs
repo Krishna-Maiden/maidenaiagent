@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MaidenAIAgent.Core.Services;
 using MaidenAIAgent.Shared.Services;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace MaidenAIAgent.Core.Tools
 {
@@ -69,12 +71,12 @@ Important: Only use ONE tool per response, and use the EXACT tool name as listed
             ILLMService llmService,
             IToolOrchestratorService toolOrchestrator,
             IOptions<ChatToolSettings> settings,
-            ILogger<AugmentedChatTool> logger)
+            ILogger<AugmentedChatTool>? logger = null)
         {
             _llmService = llmService;
             _toolOrchestrator = toolOrchestrator;
             _settings = settings.Value;
-            _logger = logger;
+            _logger = logger ?? NullLogger<AugmentedChatTool>.Instance;
         }
 
         /// <summary>
@@ -192,8 +194,8 @@ Important: Only use ONE tool per response, and use the EXACT tool name as listed
             bool usedTools = false;
 
             // Look for tool requests in the format <tool name="ToolName">query</tool>
-            var toolRequestRegex = new System.Text.RegularExpressions.Regex(@"<tool\s+name=[""']([^""']+)[""']>(.*?)</tool>",
-                System.Text.RegularExpressions.RegexOptions.Singleline);
+            var toolRequestRegex = new Regex(@"<tool\s+name=[""']([^""']+)[""']>(.*?)</tool>",
+                RegexOptions.Singleline);
 
             var matches = toolRequestRegex.Matches(claudeResponse);
 
@@ -205,7 +207,7 @@ Important: Only use ONE tool per response, and use the EXACT tool name as listed
 
             var processedResponse = claudeResponse;
 
-            foreach (System.Text.RegularExpressions.Match match in matches)
+            foreach (Match match in matches)
             {
                 if (match.Groups.Count < 3)
                 {
@@ -253,7 +255,7 @@ Important: Only use ONE tool per response, and use the EXACT tool name as listed
 
                 // If the second call fails, still return the processed response but clean it up
                 // Remove the tool markup tags
-                processedResponse = System.Text.RegularExpressions.Regex.Replace(
+                processedResponse = Regex.Replace(
                     processedResponse,
                     @"<tool\s+name=[""'][^""']+[""']>|</tool>|<tool_response>|</tool_response>",
                     "");

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using MaidenAIAgent.Core.Tools;
 using MaidenAIAgent.Shared.Services;
 using System.Text.Json;
@@ -33,10 +34,10 @@ namespace MaidenAIAgent.Core.Services
 
         public ToolOrchestratorService(
             IToolRegistry toolRegistry,
-            ILogger<ToolOrchestratorService> logger)
+            ILogger<ToolOrchestratorService>? logger = null)
         {
             _toolRegistry = toolRegistry;
-            _logger = logger;
+            _logger = logger ?? NullLogger<ToolOrchestratorService>.Instance;
         }
 
         /// <summary>
@@ -96,7 +97,7 @@ namespace MaidenAIAgent.Core.Services
                 }
 
                 // Don't allow recursive calls to chat tools to prevent infinite loops
-                if (tool.Name == "Chat" || tool.Name == "StreamingChat")
+                if (tool.Name == "Chat" || tool.Name == "StreamingChat" || tool.Name == "AugmentedChat")
                 {
                     _logger.LogWarning("Prevented recursive call to Chat tool from orchestrator");
                     return new ToolResult
@@ -125,14 +126,22 @@ namespace MaidenAIAgent.Core.Services
         /// </summary>
         public IEnumerable<ToolInfo> GetAllTools()
         {
-            // Filter out Chat tools to prevent recursive calls
-            return _toolRegistry.GetAllTools()
-                .Where(t => t.Name != "Chat" && t.Name != "StreamingChat")
-                .Select(t => new ToolInfo
-                {
-                    Name = t.Name,
-                    Description = t.Description
-                });
+            try
+            {
+                // Filter out Chat tools to prevent recursive calls
+                return _toolRegistry.GetAllTools()
+                    .Where(t => t.Name != "Chat" && t.Name != "StreamingChat" && t.Name != "AugmentedChat")
+                    .Select(t => new ToolInfo
+                    {
+                        Name = t.Name,
+                        Description = t.Description
+                    });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all tools: {Message}", ex.Message);
+                return Enumerable.Empty<ToolInfo>();
+            }
         }
     }
 }

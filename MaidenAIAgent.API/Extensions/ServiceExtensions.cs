@@ -5,6 +5,8 @@ using MaidenAIAgent.Infrastructure.Services;
 using MaidenAIAgent.Shared.Services;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MaidenAIAgent.API.Extensions
 {
@@ -37,11 +39,25 @@ namespace MaidenAIAgent.API.Extensions
             services.AddScoped<EnhancedToolRegistry>();
             services.AddScoped<IToolRegistry>(sp => sp.GetRequiredService<EnhancedToolRegistry>());
 
-            // Register Tool Orchestrator Service
-            services.AddScoped<IToolOrchestratorService, ToolOrchestratorService>();
+            // Register Tool Orchestrator Service explicitly
+            services.AddScoped<IToolOrchestratorService>(sp =>
+            {
+                var toolRegistry = sp.GetRequiredService<IToolRegistry>();
+                // Use nullable logger to avoid dependency issues
+                var logger = sp.GetService<ILogger<ToolOrchestratorService>>();
+                return new ToolOrchestratorService(toolRegistry, logger);
+            });
 
-            // Register Augmented Chat Tool (after other tools so it can use them)
-            services.AddScoped<ITool, AugmentedChatTool>();
+            // Register Augmented Chat Tool explicitly (after other tools so it can use them)
+            services.AddScoped<ITool>(sp =>
+            {
+                var llmService = sp.GetRequiredService<ILLMService>();
+                var orchestrator = sp.GetRequiredService<IToolOrchestratorService>();
+                var settings = sp.GetRequiredService<IOptions<ChatToolSettings>>();
+                // Use nullable logger to avoid dependency issues
+                var logger = sp.GetService<ILogger<AugmentedChatTool>>();
+                return new AugmentedChatTool(llmService, orchestrator, settings, logger);
+            });
 
             // Register AI Agent core services
             services.AddScoped<IAgentService, EnhancedAgentService>();
