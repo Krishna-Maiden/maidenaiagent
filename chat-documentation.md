@@ -140,6 +140,7 @@ For production deployments, consider:
 
 1. **Rate Limits**: To Prevent excessive API usage
 2. **Improved Intent Recognition**: Integrate with NLP services for more accurate intent classification
+3. **Streaming Responses**: Implement streaming for long-form responses
 
 ## Future Enhancements
 
@@ -149,7 +150,6 @@ The Chat Tool can be extended in several ways:
 2. **Personalization**: Customize responses based on user preferences or history
 3. **Multi-turn Conversations**: Support more complex dialog flows
 4. **Conversation Memory**: Add session state to track conversation history
-5. **Streaming Responses**: Implement streaming for long-form responses
-6. **Tool Augmentation**: Allow Claude to use other tools as needed
-7. **Prompt Engineering**: Refine system prompts for higher quality responses
-8. **Multi-modal Support**: Add image understanding capabilities if needed
+5. **Tool Augmentation**: Allow Claude to use other tools as needed
+6. **Prompt Engineering**: Refine system prompts for higher quality responses
+7. **Multi-modal Support**: Add image understanding capabilities if needed
