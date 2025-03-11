@@ -1,0 +1,260 @@
+{
+	"info": {
+		"_postman_id": "f28d0e1a-7b5c-4e72-9e3d-6e1b3a5c7f9d",
+		"name": "MaidenAIAgent",
+		"description": "A collection for testing the MaidenAI Agent including the new tool orchestration capabilities",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Available Tools",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/agent/tools",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"agent",
+						"tools"
+					]
+				},
+				"description": "Retrieve information about all available tools in the system"
+			},
+			"response": []
+		},
+		{
+			"name": "Process Query with AugmentedChat",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": \"What is 534 * 67? Also, what's the weather like in Seattle?\",\n    \"parameters\": {},\n    \"useAllTools\": false,\n    \"specificTools\": [\"AugmentedChat\"]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/agent/process",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"agent",
+						"process"
+					]
+				},
+				"description": "Process a query using the AugmentedChat tool which can call other tools"
+			},
+			"response": []
+		},
+		{
+			"name": "Process Query with Auto Tool Selection",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": \"What is the square root of 1,764 plus 42?\",\n    \"parameters\": {},\n    \"useAllTools\": true,\n    \"specificTools\": []\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/agent/process",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"agent",
+						"process"
+					]
+				},
+				"description": "Process a query using automatic tool selection"
+			},
+			"response": []
+		},
+		{
+			"name": "Test Specific Tool",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"toolName\": \"Calculator\",\n    \"query\": \"534 * 67\",\n    \"parameters\": {}\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/agent/testTool",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"agent",
+						"testTool"
+					]
+				},
+				"description": "Test a specific tool directly"
+			},
+			"response": []
+		},
+		{
+			"name": "Calculator Query",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": \"Calculate the square root of 1,764\",\n    \"parameters\": {},\n    \"useAllTools\": true,\n    \"specificTools\": []\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/agent/process",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"agent",
+						"process"
+					]
+				},
+				"description": "Process a calculator query"
+			},
+			"response": []
+		},
+		{
+			"name": "Weather Query",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": \"What's the weather in Seattle?\",\n    \"parameters\": {},\n    \"useAllTools\": true,\n    \"specificTools\": []\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/agent/process",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"agent",
+						"process"
+					]
+				},
+				"description": "Process a weather query"
+			},
+			"response": []
+		},
+		{
+			"name": "Search Query",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": \"Search for information about AI agents\",\n    \"parameters\": {},\n    \"useAllTools\": true,\n    \"specificTools\": []\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/agent/process",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"agent",
+						"process"
+					]
+				},
+				"description": "Process a search query"
+			},
+			"response": []
+		},
+		{
+			"name": "Multi-step Reasoning Query",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"query\": \"If I have 3 apples and you have twice as many, how many apples do we have together?\",\n    \"parameters\": {},\n    \"useAllTools\": false,\n    \"specificTools\": [\"AugmentedChat\"]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/agent/process",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"agent",
+						"process"
+					]
+				},
+				"description": "Process a query that requires multi-step reasoning"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://localhost:7173",
+			"type": "string"
+		}
+	]
+}

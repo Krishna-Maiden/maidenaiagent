@@ -37,6 +37,12 @@ namespace MaidenAIAgent.API.Extensions
             services.AddScoped<EnhancedToolRegistry>();
             services.AddScoped<IToolRegistry>(sp => sp.GetRequiredService<EnhancedToolRegistry>());
 
+            // Register Tool Orchestrator Service
+            services.AddScoped<IToolOrchestratorService, ToolOrchestratorService>();
+
+            // Register Augmented Chat Tool (after other tools so it can use them)
+            services.AddScoped<ITool, AugmentedChatTool>();
+
             // Register AI Agent core services
             services.AddScoped<IAgentService, EnhancedAgentService>();
 
